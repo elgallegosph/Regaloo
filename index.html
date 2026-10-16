@@ -15,9 +15,38 @@ const REGALO = {
   de: "Mateo",
   para: "Salito",
   // Fecha en que empezaron (AAAA-MM-DDTHH:MM)
-  fecha: "2025-10-18T20:00",
-  // 3 fotos para la portada (súbelas a la carpeta /fotos)
+  fecha: "2025-10-18T00:00",
+ 
+  // 3 fotos para la portada (carpeta /fotos)
   fotosPortada: ["fotos/1.jpg", "fotos/2.jpg", "fotos/3.jpg"],
+ 
+  // ---- NUESTRA HISTORIA (línea de tiempo) ----
+  // Pon de 3 a 6 momentos. "foto" es opcional (deja "" si no quieres foto).
+  historia: [
+    { fecha: "18 oct 2025", titulo: "El día que empezó todo",  texto: "Cuenta aquí cómo fue ese día: dónde estaban, qué sentiste, qué te dijo.", foto: "fotos/h1.jpg" },
+    { fecha: "Dic 2025",    titulo: "Nuestra primera Navidad", texto: "Un recuerdo bonito de esos días.",                                         foto: "fotos/h2.jpg" },
+    { fecha: "2026",        titulo: "Nuestro primer viaje",    texto: "Ese lugar al que siempre vamos a querer volver.",                          foto: "fotos/h3.jpg" },
+    { fecha: "Hoy",         titulo: "Un año después",          texto: "Y te sigo eligiendo todos los días.",                                      foto: "fotos/h4.jpg" }
+  ],
+ 
+  // ---- GALERÍA (se desliza con el dedo) ----
+  galeria: ["fotos/g1.jpg", "fotos/g2.jpg", "fotos/g3.jpg", "fotos/g4.jpg", "fotos/g5.jpg", "fotos/g6.jpg"],
+ 
+  // ---- RAZONES POR LAS QUE TE AMO ----
+  // Entre más específicas, mejor. Cámbialas por las tuyas.
+  razones: [
+    "Por cómo te ríes cuando algo te da mucha risa.",
+    "Porque contigo hasta un día normal se vuelve bonito.",
+    "Por la forma en que me miras cuando crees que no me doy cuenta.",
+    "Porque me haces querer ser mejor persona.",
+    "Por tus abrazos, que arreglan cualquier día malo.",
+    "Porque eres mi lugar favorito.",
+    "Por todas las veces que me has escuchado sin juzgarme.",
+    "Porque sigo sintiendo mariposas.",
+    "Por tu forma de cuidar a los que quieres.",
+    "Porque quiero todos mis próximos años contigo."
+  ],
+ 
   // La carta. Respeta los saltos de línea.
   carta: `Mi amor:
  
@@ -27,6 +56,13 @@ No tiene que ser perfecta. Tiene que ser tuya.
  
 Te Amo,`,
   firma: "Mateo",
+ 
+  // ---- RASPA Y DESCUBRE ----
+  sorpresa: {
+    titulo: "Esta noche te invito a cenar",
+    texto: "Ponte bonita (aunque ya lo eres). Paso por ti a las 7:30 p. m. ♥"
+  },
+ 
   fotoFinal: "fotos/final.jpg",
   fraseFinal: "Y esto apenas empieza.",
   // Canción opcional (archivo .mp3 en la misma carpeta). Deja "" si no quieres música.
@@ -37,14 +73,12 @@ Te Amo,`,
 <style>
 :root{
   --bg:#fbf6f1; --ink:#3a2a2a; --soft:#8a6f6a; --rose:#b5485d; --rose-2:#e8b4b8;
-  --paper:#fffdf9; --line:rgba(58,42,42,.12);
+  --paper:#fffdf9; --line:rgba(58,42,42,.12); --gold:#c9a56a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-weight:300;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 body.locked{overflow:hidden;height:100vh}
-.serif{font-family:"Cormorant Garamond",Georgia,serif}
-.script{font-family:"Great Vibes",cursive}
  
 /* ---------- Sobre de entrada ---------- */
 #intro{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse at top,#f6e3df,#ecd2cc 60%,#e2c0b9);transition:opacity 1s ease,visibility 1s}
@@ -68,15 +102,18 @@ body.locked{overflow:hidden;height:100vh}
 @keyframes pulse{50%{opacity:.35}}
  
 /* ---------- Secciones ---------- */
-section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
 .kicker{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--soft);margin-bottom:18px}
+.h2{font-family:"Cormorant Garamond",serif;font-size:clamp(30px,8vw,44px);font-weight:400;line-height:1.2;margin-bottom:34px}
+.h2 em{color:var(--rose)}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity 1.1s ease,transform 1.1s ease}
 .reveal.in{opacity:1;transform:none}
+.ph-bg{background:linear-gradient(135deg,#f0d5d1,#e2b9b4)}
  
 /* Portada */
 .polaroids{position:relative;width:min(340px,86vw);height:min(400px,100vw);margin:8px auto 36px}
 .pol{position:absolute;width:62%;background:#fff;padding:10px 10px 34px;box-shadow:0 14px 30px rgba(70,30,30,.18);border-radius:2px}
-.pol .ph{aspect-ratio:1;width:100%;object-fit:cover;display:block;background:linear-gradient(135deg,#f0d5d1,#e2b9b4)}
+.pol .ph{aspect-ratio:1;width:100%;object-fit:cover;display:block}
 .pol:nth-child(1){left:0;top:6%;transform:rotate(-8deg)}
 .pol:nth-child(2){right:0;top:0;transform:rotate(7deg)}
 .pol:nth-child(3){left:19%;top:34%;transform:rotate(-1deg);z-index:2}
@@ -88,17 +125,61 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
  
 /* Contador */
 #contador{background:linear-gradient(180deg,var(--bg),#f4e4df)}
-.counter-title{font-family:"Cormorant Garamond",serif;font-size:clamp(30px,8vw,44px);font-weight:400;margin-bottom:34px;line-height:1.2}
-.counter-title em{color:var(--rose)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(420px,100%)}
 .cell{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:14px;padding:18px 6px 14px;backdrop-filter:blur(4px)}
 .num{font-family:"Cormorant Garamond",serif;font-size:clamp(34px,10vw,46px);font-weight:600;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
 .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);margin-top:8px}
+.cell.big{grid-column:1/-1;background:linear-gradient(135deg,#fff,#fbeeee);border-color:rgba(181,72,93,.25)}
+.cell.big .num{color:var(--rose);font-size:clamp(46px,14vw,64px)}
 .counter-foot{margin-top:28px;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:19px;color:var(--soft)}
 .heartbeat{display:inline-block;color:var(--rose);animation:beat 1.2s ease-in-out infinite}
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
  
+/* Celebración de aniversario */
+.celebrate{max-height:0;overflow:hidden;opacity:0;transition:max-height 1s ease,opacity 1s ease,margin 1s ease}
+.celebrate.show{max-height:260px;opacity:1;margin-bottom:30px}
+.cel-badge{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e6c88e,var(--gold) 60%,#a98547);color:#fff;font-family:"Cormorant Garamond",serif;font-weight:600;font-size:40px;line-height:1;box-shadow:0 10px 30px rgba(169,133,71,.4);margin-bottom:14px;animation:pop 1s cubic-bezier(.2,1.6,.4,1)}
+.cel-badge small{display:block;font-size:11px;letter-spacing:.2em;font-family:Inter,sans-serif;font-weight:400;margin-top:2px}
+.cel-title{font-family:"Great Vibes",cursive;font-size:clamp(42px,12vw,60px);color:var(--rose);line-height:1.05}
+.cel-sub{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:19px;color:var(--soft);margin-top:6px}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+ 
+/* Línea de tiempo */
+#historia{background:#f4e4df}
+.timeline{position:relative;width:min(520px,100%);text-align:left}
+.timeline::before{content:"";position:absolute;left:14px;top:8px;bottom:8px;width:1px;background:linear-gradient(var(--rose-2),var(--rose),var(--rose-2))}
+.tl-item{position:relative;padding-left:46px;margin-bottom:48px}
+.tl-item:last-child{margin-bottom:0}
+.tl-item::before{content:"♥";position:absolute;left:3px;top:-2px;width:23px;height:23px;border-radius:50%;background:var(--paper);border:1px solid var(--rose-2);color:var(--rose);font-size:11px;display:grid;place-items:center}
+.tl-date{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--rose);font-weight:500}
+.tl-title{font-family:"Cormorant Garamond",serif;font-size:27px;font-weight:600;line-height:1.15;margin:6px 0 8px}
+.tl-text{font-family:"Cormorant Garamond",serif;font-size:19px;line-height:1.5;color:#5a4545}
+.tl-photo{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;margin-top:14px;box-shadow:0 12px 30px rgba(90,40,40,.14)}
+ 
+/* Galería */
+#galeria{background:linear-gradient(180deg,#f4e4df,var(--bg))}
+.gallery{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:calc(100% + 44px);margin:0 -22px;padding:6px calc((100% + 44px - min(76vw,360px))/2) 24px}
+.gallery::-webkit-scrollbar{display:none}
+.gallery img{flex:0 0 min(76vw,360px);aspect-ratio:4/5;object-fit:cover;border-radius:16px;scroll-snap-align:center;box-shadow:0 16px 36px rgba(90,40,40,.18);transition:transform .4s,opacity .4s;transform:scale(.92);opacity:.6}
+.gallery img.active{transform:scale(1);opacity:1}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:4px}
+.dots span{width:7px;height:7px;border-radius:7px;background:var(--rose-2);transition:width .3s,background .3s}
+.dots span.on{width:22px;background:var(--rose)}
+.swipe{margin-top:16px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft)}
+ 
+/* Razones */
+.reason-wrap{perspective:1000px;width:min(380px,100%)}
+.reason-card{position:relative;min-height:240px;background:var(--paper);border-radius:18px;border:1px solid rgba(181,72,93,.18);box-shadow:0 20px 50px rgba(90,40,40,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 28px;transition:transform .5s ease}
+.reason-card.flip{transform:rotateY(90deg)}
+.reason-card::before,.reason-card::after{content:"♥";position:absolute;color:var(--rose-2);font-size:16px}
+.reason-card::before{top:14px;left:18px}.reason-card::after{bottom:14px;right:18px}
+.reason-n{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--soft);margin-bottom:16px}
+.reason-text{font-family:"Cormorant Garamond",serif;font-size:clamp(24px,6.5vw,30px);line-height:1.3;font-style:italic}
+.pill{margin-top:28px;border:0;border-radius:40px;padding:14px 28px;background:var(--rose);color:#fff;font:500 14px Inter,sans-serif;letter-spacing:.05em;cursor:pointer;box-shadow:0 10px 24px rgba(181,72,93,.3);transition:transform .15s}
+.pill:active{transform:scale(.95)}
+ 
 /* Carta */
+#carta{background:linear-gradient(180deg,var(--bg),#f7ebe7)}
 .letter{width:min(560px,100%);background:var(--paper);padding:44px 30px 40px;border-radius:4px;box-shadow:0 20px 50px rgba(90,40,40,.12);text-align:left;position:relative;background-image:repeating-linear-gradient(transparent 0 33px,rgba(181,72,93,.07) 33px 34px)}
 .letter::before{content:"";position:absolute;left:22px;top:0;bottom:0;border-left:1px solid rgba(181,72,93,.18)}
 .letter-body{font-family:"Cormorant Garamond",serif;font-size:21px;line-height:34px;white-space:pre-line;padding-left:12px;min-height:200px}
@@ -107,9 +188,19 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
 .caret{display:inline-block;width:1px;height:20px;background:var(--rose);vertical-align:-3px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
  
+/* Raspa y descubre */
+#sorpresa{background:#f7ebe7}
+.scratch{position:relative;width:min(360px,100%);aspect-ratio:4/3;border-radius:20px;overflow:hidden;box-shadow:0 22px 50px rgba(90,40,40,.2)}
+.scratch-under{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,#fff,#fbeeee);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:1px solid rgba(181,72,93,.2);border-radius:20px}
+.scratch-under .kicker{margin-bottom:10px}
+.sor-title{font-family:"Great Vibes",cursive;font-size:clamp(34px,10vw,44px);color:var(--rose);line-height:1.1;font-weight:400}
+.sor-text{font-family:"Cormorant Garamond",serif;font-size:19px;line-height:1.45;margin-top:10px}
+#scratchCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;transition:opacity .8s}
+.scratch-hint{margin-top:20px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft)}
+ 
 /* Final */
-#final{background:linear-gradient(180deg,#f4e4df,#ead0ca)}
-.final-photo{width:min(380px,88vw);aspect-ratio:4/5;object-fit:cover;border-radius:200px 200px 16px 16px;box-shadow:0 24px 60px rgba(90,40,40,.25);background:linear-gradient(135deg,#f0d5d1,#e2b9b4);display:block}
+#final{background:linear-gradient(180deg,#f7ebe7,#ead0ca)}
+.final-photo{width:min(380px,88vw);aspect-ratio:4/5;object-fit:cover;border-radius:200px 200px 16px 16px;box-shadow:0 24px 60px rgba(90,40,40,.25);display:block}
 .final-text{font-family:"Great Vibes",cursive;font-size:clamp(40px,11vw,60px);color:var(--rose);margin-top:34px;line-height:1.1}
 .final-from{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--soft);margin-top:18px}
  
@@ -119,9 +210,10 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
 #music.playing{animation:spin 6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
  
-/* Pétalos */
+/* Pétalos y confeti */
 .petal{position:fixed;top:-20px;z-index:1;pointer-events:none;width:12px;height:12px;background:var(--rose-2);border-radius:12px 0 12px 0;opacity:.55;animation:fall linear forwards}
 @keyframes fall{to{transform:translate(var(--dx),110vh) rotate(540deg);opacity:0}}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -152,17 +244,49 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
   </section>
  
   <section id="contador">
+    <div class="celebrate" id="celebrate">
+      <div class="cel-badge" id="celBadge"></div>
+      <p class="cel-title" id="celTitle"></p>
+      <p class="cel-sub" id="celSub"></p>
+    </div>
     <p class="kicker reveal">Nuestro tiempo</p>
-    <h2 class="counter-title reveal">Llevamos juntos<br><em>cada segundo cuenta</em></h2>
-    <div class="grid reveal">
+    <h2 class="h2 reveal">Llevamos juntos<br><em>cada segundo cuenta</em></h2>
+    <div class="grid reveal" id="grid">
       <div class="cell"><div class="num" id="y">0</div><div class="lbl">Años</div></div>
       <div class="cell"><div class="num" id="mo">0</div><div class="lbl">Meses</div></div>
       <div class="cell"><div class="num" id="d">0</div><div class="lbl">Días</div></div>
       <div class="cell"><div class="num" id="h">0</div><div class="lbl">Horas</div></div>
       <div class="cell"><div class="num" id="mi">0</div><div class="lbl">Minutos</div></div>
       <div class="cell"><div class="num" id="s">0</div><div class="lbl">Segundos</div></div>
+      <div class="cell big"><div class="num" id="totalDays">0</div><div class="lbl">Días a tu lado en total</div></div>
     </div>
     <p class="counter-foot reveal">y sigue contando <span class="heartbeat">♥</span></p>
+  </section>
+ 
+  <section id="historia">
+    <p class="kicker reveal">Nuestra historia</p>
+    <h2 class="h2 reveal">Un año de <em>nosotros</em></h2>
+    <div class="timeline" id="timeline"></div>
+  </section>
+ 
+  <section id="galeria">
+    <p class="kicker reveal">Nuestros momentos</p>
+    <h2 class="h2 reveal">Lo que <em>no cabe</em> en palabras</h2>
+    <div class="gallery reveal" id="gallery"></div>
+    <div class="dots" id="dots"></div>
+    <p class="swipe">Desliza →</p>
+  </section>
+ 
+  <section id="razones">
+    <p class="kicker reveal">Razones por las que te amo</p>
+    <h2 class="h2 reveal">Te podría dar <em>mil</em>,<br>empecemos por estas</h2>
+    <div class="reason-wrap reveal">
+      <div class="reason-card" id="reasonCard">
+        <span class="reason-n" id="reasonN"></span>
+        <p class="reason-text" id="reasonText"></p>
+      </div>
+    </div>
+    <button class="pill reveal" id="reasonBtn">Otra razón ♥</button>
   </section>
  
   <section id="carta">
@@ -173,8 +297,22 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
     </div>
   </section>
  
+  <section id="sorpresa">
+    <p class="kicker reveal">Una última sorpresa</p>
+    <h2 class="h2 reveal">Raspa con tu dedo<br><em>y descúbrela</em></h2>
+    <div class="scratch reveal" id="scratch">
+      <div class="scratch-under">
+        <p class="kicker">Tu sorpresa</p>
+        <p class="sor-title" id="sorTitle"></p>
+        <p class="sor-text" id="sorText"></p>
+      </div>
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+    <p class="scratch-hint" id="scratchHint">✦ Raspa aquí ✦</p>
+  </section>
+ 
   <section id="final">
-    <img class="final-photo reveal" id="finalPhoto" alt="">
+    <img class="final-photo ph-bg reveal" id="finalPhoto" alt="">
     <p class="final-text reveal" id="finalText"></p>
     <p class="final-from reveal" id="finalFrom"></p>
   </section>
@@ -185,22 +323,70 @@ section{min-height:100svh;padding:72px 22px;display:flex;flex-direction:column;a
 <script>
 const $ = id => document.getElementById(id);
 const R = REGALO;
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const img = (src, cls) => `<img class="${cls} ph-bg" src="${esc(src)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${BLANK}'">`;
  
-/* Contenido */
+/* ---------- Contenido ---------- */
 document.title = "Para " + R.para;
 $("introName").textContent = R.para;
-$("names").innerHTML = `${R.de}<span class="amp">&amp;</span>${R.para}`;
+$("names").innerHTML = `${esc(R.de)}<span class="amp">&amp;</span>${esc(R.para)}`;
 const start = new Date(R.fecha);
 $("since").textContent = "Desde el " + start.toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric"});
-$("polaroids").innerHTML = R.fotosPortada.slice(0,3).map(src =>
-  `<div class="pol"><img class="ph" src="${src}" alt="" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='"></div>`).join("");
+$("polaroids").innerHTML = R.fotosPortada.slice(0,3).map(src => `<div class="pol">${img(src,"ph")}</div>`).join("");
+ 
+// Línea de tiempo
+$("timeline").innerHTML = (R.historia||[]).map(h => `
+  <div class="tl-item reveal">
+    <p class="tl-date">${esc(h.fecha)}</p>
+    <h3 class="tl-title">${esc(h.titulo)}</h3>
+    <p class="tl-text">${esc(h.texto)}</p>
+    ${h.foto ? img(h.foto,"tl-photo") : ""}
+  </div>`).join("");
+ 
+// Galería
+const gal = $("gallery");
+gal.innerHTML = (R.galeria||[]).map(src => img(src,"")).join("");
+$("dots").innerHTML = (R.galeria||[]).map(() => "<span></span>").join("");
+function updateGallery(){
+  const imgs = gal.querySelectorAll("img"); if (!imgs.length) return;
+  const center = gal.scrollLeft + gal.clientWidth/2; let best = 0, bd = 1e9;
+  imgs.forEach((im,i) => { const c = im.offsetLeft + im.offsetWidth/2; const dd = Math.abs(c-center); if (dd < bd){ bd = dd; best = i; } });
+  imgs.forEach((im,i) => im.classList.toggle("active", i === best));
+  $("dots").querySelectorAll("span").forEach((s,i) => s.classList.toggle("on", i === best));
+}
+gal.addEventListener("scroll", () => requestAnimationFrame(updateGallery), {passive:true});
+window.addEventListener("load", updateGallery); updateGallery();
+ 
+// Razones
+const razones = [...(R.razones||[])].sort(() => Math.random() - .5);
+let ri = 0;
+function showReason(){
+  $("reasonN").textContent = `Razón ${ri+1} de ${razones.length}`;
+  $("reasonText").textContent = razones[ri] || "";
+}
+showReason();
+$("reasonBtn").onclick = () => {
+  const card = $("reasonCard"); card.classList.add("flip");
+  setTimeout(() => {
+    ri = (ri + 1) % razones.length; showReason(); card.classList.remove("flip");
+    if (ri === razones.length - 1) $("reasonBtn").textContent = "Volver a empezar ♥";
+    else if (ri === 0) $("reasonBtn").textContent = "Otra razón ♥";
+  }, 250);
+  if (ri === razones.length - 2) setTimeout(() => confetti(70), 300);
+};
+ 
+// Carta, sorpresa, final
+$("letterSign").textContent = R.firma;
+$("sorTitle").textContent = R.sorpresa.titulo;
+$("sorText").textContent = R.sorpresa.texto;
 $("finalPhoto").src = R.fotoFinal;
-$("finalPhoto").onerror = function(){ this.onerror=null; this.src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="; };
+$("finalPhoto").onerror = function(){ this.onerror=null; this.src=BLANK; };
 $("finalText").textContent = R.fraseFinal;
 $("finalFrom").textContent = "Con amor, " + R.de;
-$("letterSign").textContent = R.firma;
  
-/* Contador */
+/* ---------- Contador + celebración ---------- */
+let years = 0, celebrated = false, counterSeen = false;
 function tick(){
   const now = new Date();
   if (now < start) return;
@@ -213,32 +399,55 @@ function tick(){
   const mi = Math.floor(rest / 60), s = rest % 60;
   $("y").textContent = y; $("mo").textContent = m; $("d").textContent = d;
   $("h").textContent = h; $("mi").textContent = mi; $("s").textContent = s;
+  $("totalDays").textContent = Math.floor((now - start) / 86400000).toLocaleString("es-CO");
+  const crossed = y > years && years !== 0 || (y >= 1 && years === 0 && counterSeen && !celebrated);
+  years = y;
+  window.__sinceAnniv = { m, d };
+  if (crossed) celebrate();
+}
+const ORD = ["primer","segundo","tercer","cuarto","quinto","sexto","séptimo","octavo","noveno","décimo"];
+function celebrate(){
+  if (years < 1) return;
+  celebrated = true;
+  const { m, d } = window.__sinceAnniv || { m: 0, d: 0 };
+  const isAnnivWeek = m === 0 && d < 7;
+  $("celBadge").innerHTML = `${years}<small>${years === 1 ? "AÑO" : "AÑOS"}</small>`;
+  $("celTitle").textContent = isAnnivWeek
+    ? `¡Feliz ${ORD[years-1] || years + "º"} año!`
+    : `${years} ${years === 1 ? "año" : "años"} juntos`;
+  $("celSub").textContent = isAnnivWeek ? `Te amo, ${R.para}` : `y te sigo eligiendo, ${R.para}`;
+  $("celebrate").classList.add("show");
+  confetti(180);
 }
 tick(); setInterval(tick, 1000);
+new IntersectionObserver((es, o) => es.forEach(e => {
+  if (!e.isIntersecting) return; o.disconnect(); counterSeen = true;
+  if (years >= 1 && !celebrated) setTimeout(celebrate, 600);
+}), {threshold:.4}).observe($("grid"));
  
-/* Música */
+/* ---------- Música ---------- */
 const audio = $("audio"), btn = $("music");
 if (R.cancion){ audio.src = R.cancion; }
 btn.onclick = () => { audio.paused ? audio.play() : audio.pause(); };
 audio.onplay = () => btn.classList.add("playing");
 audio.onpause = () => btn.classList.remove("playing");
  
-/* Abrir sobre */
+/* ---------- Abrir sobre ---------- */
 let opened = false;
 $("envelope").onclick = () => {
   if (opened) return; opened = true;
   $("envelope").classList.add("open");
   if (R.cancion){ btn.classList.add("show"); audio.play().catch(()=>{}); }
-  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); }, 1700);
+  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); updateGallery(); }, 1700);
 };
  
-/* Aparecer al hacer scroll */
+/* ---------- Aparecer al hacer scroll ---------- */
 const io = new IntersectionObserver(es => es.forEach(e => {
   if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
-}), {threshold:.2});
+}), {threshold:.15});
 document.querySelectorAll(".reveal").forEach(el => io.observe(el));
  
-/* Carta escrita a máquina */
+/* ---------- Carta escrita a máquina ---------- */
 let typed = false;
 new IntersectionObserver((es, o) => es.forEach(e => {
   if (!e.isIntersecting || typed) return; typed = true; o.disconnect();
@@ -251,7 +460,47 @@ new IntersectionObserver((es, o) => es.forEach(e => {
   })();
 }), {threshold:.35}).observe($("letterBody"));
  
-/* Pétalos */
+/* ---------- Raspa y descubre ---------- */
+let scratchReady = false, revealed = false;
+function initScratch(){
+  if (scratchReady) return; scratchReady = true;
+  const cv = $("scratchCanvas"), box = $("scratch"), ctx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio || 1, w = box.clientWidth, h = box.clientHeight;
+  cv.width = w * dpr; cv.height = h * dpr; ctx.scale(dpr, dpr);
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, "#e6c88e"); g.addColorStop(.5, "#c9a56a"); g.addColorStop(1, "#b08a4e");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  for (let k = 0; k < 260; k++){ ctx.fillStyle = `rgba(255,255,255,${Math.random()*.25})`; ctx.fillRect(Math.random()*w, Math.random()*h, 2, 2); }
+  ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.font = `${Math.round(w/7)}px "Great Vibes", cursive`; ctx.fillText("Raspa aquí", w/2, h/2 - 8);
+  ctx.font = `500 ${Math.round(w/30)}px Inter, sans-serif`; ctx.fillText("♥  CON TU DEDO  ♥", w/2, h/2 + w/11);
+  ctx.globalCompositeOperation = "destination-out";
+  let drawing = false, last = null, moves = 0;
+  const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const scratchAt = p => {
+    ctx.lineWidth = 46; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo((last||p).x, (last||p).y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x, p.y, 23, 0, Math.PI*2); ctx.fill();
+    last = p; if (++moves % 12 === 0) check();
+  };
+  const check = () => {
+    if (revealed) return;
+    const data = ctx.getImageData(0, 0, cv.width, cv.height).data; let clear = 0, tot = 0;
+    for (let i = 3; i < data.length; i += 4 * 40){ tot++; if (data[i] < 10) clear++; }
+    if (clear / tot > .5){
+      revealed = true; cv.style.opacity = 0; $("scratchHint").textContent = "♥";
+      setTimeout(() => cv.remove(), 900); confetti(200); petals(14);
+    }
+  };
+  cv.addEventListener("pointerdown", e => { drawing = true; last = null; cv.setPointerCapture(e.pointerId); scratchAt(pos(e)); });
+  cv.addEventListener("pointermove", e => { if (drawing) scratchAt(pos(e)); });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev => cv.addEventListener(ev, () => { drawing = false; last = null; check(); }));
+}
+new IntersectionObserver((es, o) => es.forEach(e => {
+  if (e.isIntersecting){ o.disconnect(); document.fonts.ready.then(initScratch); }
+}), {threshold:.1}).observe($("scratch"));
+ 
+/* ---------- Pétalos ---------- */
 function petals(n){
   for (let k = 0; k < n; k++){
     const p = document.createElement("div"); p.className = "petal";
@@ -261,6 +510,32 @@ function petals(n){
     p.style.animationDelay = (Math.random()*3) + "s";
     document.body.appendChild(p); setTimeout(() => p.remove(), 14000);
   }
+}
+ 
+/* ---------- Confeti ---------- */
+function confetti(n){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = document.createElement("canvas"); c.className = "confetti"; document.body.appendChild(c);
+  const ctx = c.getContext("2d"), dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+  c.width = W * dpr; c.height = H * dpr; ctx.scale(dpr, dpr);
+  const cols = ["#b5485d","#e8b4b8","#c9a56a","#d4566c","#f3d9a4","#ffffff"];
+  const ps = Array.from({length:n}, () => ({
+    x: W/2 + (Math.random()-.5)*W*.5, y: H*.45, vx: (Math.random()-.5)*14, vy: -Math.random()*14 - 5,
+    s: Math.random()*6 + 5, r: Math.random()*6, vr: (Math.random()-.5)*.3,
+    c: cols[Math.random()*cols.length|0], heart: Math.random() < .35
+  }));
+  let t = 0;
+  (function frame(){
+    ctx.clearRect(0, 0, W, H); t++;
+    ps.forEach(p => {
+      p.vy += .28; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - t/240);
+      if (p.heart){ ctx.font = `${p.s*2.6}px serif`; ctx.fillText("♥", 0, 0); }
+      else ctx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+      ctx.restore();
+    });
+    if (t < 240) requestAnimationFrame(frame); else c.remove();
+  })();
 }
 </script>
 </body>
