@@ -158,10 +158,25 @@ section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;a
  
 /* Galería */
 #galeria{background:linear-gradient(180deg,#f4e4df,var(--bg))}
-.gallery{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:calc(100% + 44px);margin:0 -22px;padding:6px calc((100% + 44px - min(76vw,360px))/2) 24px}
+.gallery{display:flex;align-items:center;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:calc(100% + 44px);margin:0 -22px;padding:10px 7vw 26px;min-height:calc(min(64svh,560px) + 36px)}
 .gallery::-webkit-scrollbar{display:none}
-.gallery img{flex:0 0 min(76vw,360px);aspect-ratio:4/5;object-fit:cover;border-radius:16px;scroll-snap-align:center;box-shadow:0 16px 36px rgba(90,40,40,.18);transition:transform .4s,opacity .4s;transform:scale(.92);opacity:.6}
+/* Cada foto conserva su forma real (vertical, horizontal o cuadrada): JS fija el tamaño exacto */
+.gallery img{flex:0 0 auto;width:min(76vw,360px);height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:14px;scroll-snap-align:center;box-shadow:0 16px 36px rgba(90,40,40,.18);transition:transform .4s,opacity .4s;transform:scale(.93);opacity:.55;cursor:zoom-in;background:#fff}
+.gallery img.sized{aspect-ratio:auto}
 .gallery img.active{transform:scale(1);opacity:1}
+.zoom-hint{margin-top:6px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);opacity:.8}
+ 
+/* Visor en pantalla completa */
+#lightbox{position:fixed;inset:0;z-index:70;background:rgba(25,14,16,.94);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;touch-action:pan-y}
+#lightbox.open{opacity:1;visibility:visible}
+#lbImg{max-width:94vw;max-height:84svh;width:auto;height:auto;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:opacity .25s,transform .25s;user-select:none;-webkit-user-drag:none}
+#lbImg.fade{opacity:0;transform:scale(.97)}
+.lb-btn{position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;width:46px;height:46px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(6px)}
+.lb-close{top:max(16px,env(safe-area-inset-top));right:16px}
+.lb-prev{left:12px;top:50%;transform:translateY(-50%)}
+.lb-next{right:12px;top:50%;transform:translateY(-50%)}
+.lb-count{position:absolute;bottom:max(22px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,.75);font-size:12px;letter-spacing:.25em}
+@media (max-width:600px){.lb-prev,.lb-next{width:40px;height:40px;font-size:18px;background:rgba(255,255,255,.08)}}
 .dots{display:flex;gap:8px;justify-content:center;margin-top:4px}
 .dots span{width:7px;height:7px;border-radius:7px;background:var(--rose-2);transition:width .3s,background .3s}
 .dots span.on{width:22px;background:var(--rose)}
@@ -275,6 +290,7 @@ section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;a
     <div class="gallery reveal" id="gallery"></div>
     <div class="dots" id="dots"></div>
     <p class="swipe">Desliza →</p>
+    <p class="zoom-hint">Toca una foto para ampliarla</p>
   </section>
  
   <section id="razones">
@@ -318,6 +334,14 @@ section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;a
   </section>
 </main>
  
+<div id="lightbox" aria-hidden="true">
+  <img id="lbImg" alt="">
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Cerrar">✕</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Anterior">‹</button>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Siguiente">›</button>
+  <p class="lb-count" id="lbCount"></p>
+</div>
+ 
 <audio id="audio" loop preload="auto"></audio>
  
 <script>
@@ -346,8 +370,71 @@ $("timeline").innerHTML = (R.historia||[]).map(h => `
  
 // Galería
 const gal = $("gallery");
-gal.innerHTML = (R.galeria||[]).map(src => img(src,"")).join("");
+gal.innerHTML = (R.galeria||[]).map((src,i) => `<img src="${esc(src)}" alt="" data-i="${i}" class="ph-bg">`).join("");
 $("dots").innerHTML = (R.galeria||[]).map(() => "<span></span>").join("");
+ 
+// Ajusta cada foto a su proporción real: alto máximo ~64% de la pantalla, ancho máximo 86%
+function sizeGallery(){
+  const maxH = Math.min(innerHeight * .64, 560), maxW = Math.min(innerWidth * .86, 520);
+  const imgs = gal.querySelectorAll("img");
+  imgs.forEach(im => {
+    const ok = im.complete && im.naturalWidth > 1;
+    const r = ok ? im.naturalWidth / im.naturalHeight : 4/5;
+    let h = maxH, w = h * r;
+    if (w > maxW){ w = maxW; h = w / r; }
+    im.style.width = Math.round(w) + "px"; im.style.height = Math.round(h) + "px";
+    im.classList.add("sized");
+  });
+  // Relleno a los lados para que la primera y la última queden centradas
+  if (imgs.length){
+    const cw = gal.clientWidth;
+    gal.style.paddingLeft  = Math.max(16, (cw - imgs[0].offsetWidth) / 2) + "px";
+    gal.style.paddingRight = Math.max(16, (cw - imgs[imgs.length-1].offsetWidth) / 2) + "px";
+  }
+  updateGallery();
+}
+gal.querySelectorAll("img").forEach(im => {
+  im.addEventListener("load", sizeGallery);
+  im.addEventListener("error", () => { im.src = BLANK; });
+  im.addEventListener("click", () => {
+    const i = +im.dataset.i;
+    if (!im.classList.contains("active")){ im.scrollIntoView({behavior:"smooth", inline:"center", block:"nearest"}); return; }
+    openLightbox(i);
+  });
+});
+window.addEventListener("resize", sizeGallery);
+ 
+// Visor en pantalla completa
+let lbIndex = 0;
+const LB = $("lightbox"), lbImg = $("lbImg"), fotos = R.galeria || [];
+function showLb(i){
+  lbIndex = (i + fotos.length) % fotos.length;
+  lbImg.classList.add("fade");
+  setTimeout(() => { lbImg.src = fotos[lbIndex]; $("lbCount").textContent = `${lbIndex+1} / ${fotos.length}`; }, 150);
+  lbImg.onload = () => lbImg.classList.remove("fade");
+  lbImg.onerror = () => lbImg.classList.remove("fade");
+}
+function openLightbox(i){ showLb(i); LB.classList.add("open"); LB.setAttribute("aria-hidden","false"); document.body.style.overflow = "hidden"; }
+function closeLightbox(){
+  LB.classList.remove("open"); LB.setAttribute("aria-hidden","true"); document.body.style.overflow = "";
+  const t = gal.querySelectorAll("img")[lbIndex]; if (t) t.scrollIntoView({inline:"center", block:"nearest"});
+}
+$("lbClose").onclick = closeLightbox;
+$("lbPrev").onclick = e => { e.stopPropagation(); showLb(lbIndex - 1); };
+$("lbNext").onclick = e => { e.stopPropagation(); showLb(lbIndex + 1); };
+LB.addEventListener("click", e => { if (e.target === LB) closeLightbox(); });
+document.addEventListener("keydown", e => {
+  if (!LB.classList.contains("open")) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") showLb(lbIndex - 1);
+  if (e.key === "ArrowRight") showLb(lbIndex + 1);
+});
+let tx = null;
+LB.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, {passive:true});
+LB.addEventListener("touchend", e => {
+  if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 50) showLb(lbIndex + (dx < 0 ? 1 : -1));
+});
 function updateGallery(){
   const imgs = gal.querySelectorAll("img"); if (!imgs.length) return;
   const center = gal.scrollLeft + gal.clientWidth/2; let best = 0, bd = 1e9;
@@ -356,7 +443,7 @@ function updateGallery(){
   $("dots").querySelectorAll("span").forEach((s,i) => s.classList.toggle("on", i === best));
 }
 gal.addEventListener("scroll", () => requestAnimationFrame(updateGallery), {passive:true});
-window.addEventListener("load", updateGallery); updateGallery();
+window.addEventListener("load", sizeGallery); sizeGallery();
  
 // Razones
 const razones = [...(R.razones||[])].sort(() => Math.random() - .5);
@@ -438,7 +525,7 @@ $("envelope").onclick = () => {
   if (opened) return; opened = true;
   $("envelope").classList.add("open");
   if (R.cancion){ btn.classList.add("show"); audio.play().catch(()=>{}); }
-  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); updateGallery(); }, 1700);
+  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); sizeGallery(); }, 1700);
 };
  
 /* ---------- Aparecer al hacer scroll ---------- */
@@ -540,4 +627,5 @@ function confetti(n){
 </script>
 </body>
 </html>
+ 
  
