@@ -111,12 +111,18 @@ section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;a
 .ph-bg{background:linear-gradient(135deg,#f0d5d1,#e2b9b4)}
  
 /* Portada */
-.polaroids{position:relative;width:min(340px,86vw);height:min(400px,100vw);margin:8px auto 36px}
-.pol{position:absolute;width:62%;background:#fff;padding:10px 10px 34px;box-shadow:0 14px 30px rgba(70,30,30,.18);border-radius:2px}
-.pol .ph{aspect-ratio:1;width:100%;object-fit:cover;display:block}
-.pol:nth-child(1){left:0;top:6%;transform:rotate(-8deg)}
-.pol:nth-child(2){right:0;top:0;transform:rotate(7deg)}
-.pol:nth-child(3){left:19%;top:34%;transform:rotate(-1deg);z-index:2}
+/* Mazo de polaroids que rota: la de adelante pasa atrás y la siguiente viene al frente */
+.polaroids{position:relative;width:min(340px,86vw);aspect-ratio:17/19;margin:8px auto 30px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pol{--t:none;position:absolute;left:50%;top:50%;width:76%;background:#fff;padding:10px 10px 38px;box-shadow:0 18px 40px rgba(70,30,30,.22);border-radius:3px;transform:translate(-50%,-50%) var(--t);transition:transform .95s cubic-bezier(.45,.05,.2,1),filter .95s,opacity .95s,box-shadow .95s;will-change:transform}
+.pol .ph{aspect-ratio:1;width:100%;object-fit:cover;display:block;pointer-events:none}
+.pol[data-pos="0"]{--t:rotate(-2deg);z-index:3}
+.pol[data-pos="1"]{--t:translate(17%,-6%) rotate(7deg) scale(.86);z-index:2;filter:brightness(.94);box-shadow:0 10px 24px rgba(70,30,30,.16)}
+.pol[data-pos="2"]{--t:translate(-17%,-4%) rotate(-8deg) scale(.86);z-index:1;filter:brightness(.9);box-shadow:0 10px 24px rgba(70,30,30,.14)}
+.pol[data-pos="3"]{--t:translate(0,-6%) scale(.8);z-index:0;opacity:0}
+.pol.leaving{--t:translate(82%,-10%) rotate(16deg) scale(.95)!important;z-index:4!important;transition-duration:.55s}
+.pol-dots{display:flex;gap:6px;justify-content:center;margin:-14px 0 26px}
+.pol-dots span{width:6px;height:6px;border-radius:6px;background:var(--rose-2);transition:width .4s,background .4s}
+.pol-dots span.on{width:18px;background:var(--rose)}
 .names{font-family:"Great Vibes",cursive;font-size:clamp(48px,13vw,76px);color:var(--rose);line-height:1.05;font-weight:400}
 .names .amp{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:.55em;color:var(--soft);margin:0 .15em}
 .since{font-family:"Cormorant Garamond",serif;font-size:20px;font-style:italic;color:var(--soft);margin-top:10px}
@@ -252,7 +258,8 @@ section{min-height:100svh;padding:80px 22px;display:flex;flex-direction:column;a
  
 <main>
   <section id="portada">
-    <div class="polaroids reveal" id="polaroids"></div>
+    <div class="polaroids reveal" id="polaroids" role="button" aria-label="Ver la siguiente foto"></div>
+    <div class="pol-dots" id="polDots"></div>
     <h1 class="names reveal" id="names"></h1>
     <p class="since reveal" id="since"></p>
     <div class="scroll-hint">⌄</div>
@@ -357,7 +364,30 @@ $("introName").textContent = R.para;
 $("names").innerHTML = `${esc(R.de)}<span class="amp">&amp;</span>${esc(R.para)}`;
 const start = new Date(R.fecha);
 $("since").textContent = "Desde el " + start.toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric"});
-$("polaroids").innerHTML = R.fotosPortada.slice(0,3).map(src => `<div class="pol">${img(src,"ph")}</div>`).join("");
+$("polaroids").innerHTML = R.fotosPortada.map(src => `<div class="pol">${img(src,"ph")}</div>`).join("");
+ 
+// Rotación de la portada: cada 3,5 s la del frente sale y pasa atrás. Tocar = siguiente.
+const pols = [...$("polaroids").children];
+let polOrder = pols.map((_, i) => i), polTimer = null, polBusy = false;
+$("polDots").innerHTML = pols.length > 1 ? pols.map(() => "<span></span>").join("") : "";
+function layoutPols(){
+  polOrder.forEach((idx, pos) => { pols[idx].dataset.pos = Math.min(pos, 3); });
+  $("polDots").querySelectorAll("span").forEach((s, i) => s.classList.toggle("on", i === polOrder[0]));
+}
+function nextPol(){
+  if (pols.length < 2 || polBusy) return; polBusy = true;
+  const front = pols[polOrder[0]];
+  polOrder.push(polOrder.shift());
+  front.classList.add("leaving");          // sale hacia la derecha…
+  layoutPols();                            // …mientras la siguiente avanza al frente
+  setTimeout(() => { front.classList.remove("leaving"); polBusy = false; }, 560); // y se acomoda atrás
+}
+function startPols(){
+  clearInterval(polTimer);
+  if (pols.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) polTimer = setInterval(nextPol, 3500);
+}
+$("polaroids").addEventListener("click", () => { nextPol(); startPols(); });
+layoutPols();
  
 // Línea de tiempo
 $("timeline").innerHTML = (R.historia||[]).map(h => `
@@ -525,7 +555,7 @@ $("envelope").onclick = () => {
   if (opened) return; opened = true;
   $("envelope").classList.add("open");
   if (R.cancion){ btn.classList.add("show"); audio.play().catch(()=>{}); }
-  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); sizeGallery(); }, 1700);
+  setTimeout(() => { $("intro").classList.add("gone"); document.body.classList.remove("locked"); petals(18); sizeGallery(); setTimeout(startPols, 1800); }, 1700);
 };
  
 /* ---------- Aparecer al hacer scroll ---------- */
